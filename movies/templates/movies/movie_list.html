@@ -1,0 +1,59 @@
+{% extends 'movies/base.html' %}
+
+{% block title %}Movie Listings @ GV Cinema{% endblock %}
+
+{% block content %}
+{% load static %}
+<div class="header">
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search movies...">
+    </div>
+    <hr>
+</div>
+
+
+<h2 class="movie-grid-title">Popular movies this month</h2>
+<div class="movie-grid" id="movie-grid">
+    {% for movie in movies %}
+    <div class="movie-card">
+        <a href="{% url 'movies:movie_detail' movie.id %}">
+            <img src="{% static movie.imgPath %}" alt="{{ movie.name }}" onerror="this.onerror=null; this.src='{% static 'assets/images/empty.svg' %}';">
+            <div class="movie-info">
+                <h3>{{ movie.name }}</h3>
+                <div class="movie-info-details">
+                    <p>{{ movie.duration }} min</p>
+                    <p>User Rating: {{ movie.userRating }}/5</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('search-input').addEventListener('input', function(e) {
+    const query = e.target.value;
+    fetch(`/movies/search/?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            const movieGrid = document.getElementById('movie-grid');
+            movieGrid.innerHTML = data.movies.map(movie => `
+                <div class="movie-card">
+                    <a href="/movies/movie/${movie.id}/">
+                        <img src="${movie.imgPath}" alt="${movie.name}" onerror="this.onerror=null; this.src='{% static 'assets/images/empty.svg' %}';">
+                        <div class="movie-info">
+                            <h3>${movie.name}</h3>
+                            <div class="movie-info-details">
+                                <p>${movie.duration} min</p>
+                                <p>User Rating: ${movie.userRating}/5</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            `).join('');
+        });
+});
+</script>
+{% endblock %}
